@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
+  <title>BarberControl PWA - Tu barbería inteligente</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="stylesheet" href="style.css">
+  <meta name="theme-color" content="#2C3E50">
+  <meta name="description" content="Gestión completa para tu barbería">
+  <link rel="apple-touch-icon" href="icon-192.png">
+</head>
+<body>
+  <div class="app-container">
+    <!-- HEADER MEJORADO -->
+    <header>
+      <div class="header-top">
+        <div class="logo">
+          <span class="logo-icon">✂️</span>
+          <h1>BarberControl</h1>
+        </div>
+        <div class="header-actions">
+          <div class="offline-indicator" id="offlineStatus">
+            <span class="status-dot online"></span>
+            <span>Online</span>
+          </div>
+          <button id="btnConfig" class="btn-icon" aria-label="Configuración">
+            ⚙️
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- TABS MEJORADOS -->
+    <nav class="tabs">
+      <button class="tab-btn active" data-tab="clientes">
+        <span class="tab-icon">👥</span>
+        <span>Clientes</span>
+      </button>
+      <button class="tab-btn" data-tab="agenda">
+        <span class="tab-icon">📅</span>
+        <span>Agenda</span>
+      </button>
+      <button class="tab-btn" data-tab="inventario">
+        <span class="tab-icon">📦</span>
+        <span>Inventario</span>
+      </button>
+      <button class="tab-btn" data-tab="reportes">
+        <span class="tab-icon">📊</span>
+        <span>Reportes</span>
+      </button>
+    </nav>
+
+    <!-- CONTENIDO DE TABS -->
+    <main class="tab-content-container">
+      
+      <!-- TAB CLIENTES -->
+      <div id="clientes" class="tab-content active">
+        <div class="content-header">
+          <h2>👥 Mis Clientes</h2>
+          <button class="btn-primary btn-large" id="btnNuevoCliente">
+            <span>➕</span> Nuevo Cliente
+          </button>
+        </div>
+        
+        <div class="search-box">
+          <input type="text" id="searchCliente" placeholder="🔍 Buscar por nombre o teléfono..." class="search-input">
+        </div>
+        
+        <div id="listaClientes" class="card-list">
+          <!-- Los clientes se cargarán dinámicamente -->
+        </div>
+      </div>
+
+      <!-- TAB AGENDA -->
+      <div id="agenda" class="tab-content">
+        <div class="content-header">
+          <h2>📅 Citas</h2>
+          <button class="btn-primary btn-large" id="btnNuevaCita">
+            <span>➕</span> Nueva Cita
+          </button>
+        </div>
+        
+        <div class="filter-buttons">
+          <button class="filter-btn active" data-filter="todas">Todas</button>
+          <button class="filter-btn" data-filter="pendiente">Pendientes</button>
+          <button class="filter-btn" data-filter="finalizada">Finalizadas</button>
+        </div>
+        
+        <div id="listaCitas" class="card-list">
+          <!-- Las citas se cargarán dinámicamente -->
+        </div>
+      </div>
+
+      <!-- TAB INVENTARIO -->
+      <div id="inventario" class="tab-content">
+        <div class="content-header">
+          <h2>📦 Productos</h2>
+          <div class="button-group">
+            <button class="btn-secondary btn-large" id="btnVentaDirecta">
+              <span>💰</span> Venta Rápida
+            </button>
+            <button class="btn-primary btn-large" id="btnNuevoProducto">
+              <span>➕</span> Agregar
+            </button>
+          </div>
+        </div>
+        
+        <div id="listaProductos" class="card-list">
+          <!-- Los productos se cargarán dinámicamente -->
+        </div>
+      </div>
+
+      <!-- TAB REPORTES -->
+      <div id="reportes" class="tab-content">
+        <div class="content-header">
+          <h2>📊 Reportes</h2>
+        </div>
+        
+        <div class="report-card">
+          <h3>📅 Resumen del día</h3>
+          <div class="date-selector">
+            <input type="date" id="fechaReporte" class="date-input">
+            <button id="btnVerResumen" class="btn-primary">Ver Resumen</button>
+          </div>
+          <div id="resumenDia" class="resumen-stats">
+            <!-- Resumen se mostrará aquí -->
+          </div>
+        </div>
+
+        <div class="report-card">
+          <h3>🏆 Ranking de Servicios</h3>
+          <div class="ranking-filters">
+            <button class="small-filter-btn active" data-ranking-mes="30">Último mes</button>
+            <button class="small-filter-btn" data-ranking-mes="90">Último trimestre</button>
+            <button class="small-filter-btn" data-ranking-mes="365">Último año</button>
+          </div>
+          <div id="rankingServicios" class="ranking-list">
+            <!-- Ranking se mostrará aquí -->
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- MODAL CLIENTE -->
+  <div id="modalCliente" class="modal hidden">
+    <div class="modal-content modal-large">
+      <div class="modal-header">
+        <h2 id="modalClienteTitle">📝 Registrar Cliente</h2>
+        <button class="modal-close">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form id="formCliente">
+          <div class="form-group">
+            <label>Nombre y Apellidos *</label>
+            <input type="text" id="clienteNombre" required placeholder="Ej: Juan Pérez">
+          </div>
+          <div class="form-group">
+            <label>Teléfono Móvil *</label>
+            <input type="tel" id="clienteTelefono" required placeholder="8 dígitos" pattern="[0-9]{8}" maxlength="8">
+            <small>8 dígitos, único por cliente</small>
+          </div>
+          <div class="form-group">
+            <label>Fecha de Nacimiento</label>
+            <input type="date" id="clienteNacimiento">
+          </div>
+          <div class="form-group">
+            <label>Correo Electrónico</label>
+            <input type="email" id="clienteEmail" placeholder="cliente@ejemplo.com">
+          </div>
+          <div class="form-group">
+            <label>Observaciones / Alergias</label>
+            <textarea id="clienteAlergias" rows="3" placeholder="Ej: Alergia a ciertos tintes..."></textarea>
+          </div>
+          <div class="modal-buttons">
+            <button type="button" class="btn-secondary" id="cancelarCliente">Cancelar</button>
+            <button type="submit" class="btn-primary">Guardar Cliente</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL CITA -->
+  <div id="modalCita" class="modal hidden">
+    <div class="modal-content modal-medium">
+      <div class="modal-header">
+        <h2>📅 Nueva Cita</h2>
+        <button class="modal-close">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form id="formCita">
+          <div class="form-group">
+            <label>Cliente *</label>
+            <select id="citaCliente" required>
+              <option value="">Seleccionar cliente...</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Servicio *</label>
+            <select id="citaServicio" required>
+              <option value="">Seleccionar servicio...</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Barbero *</label>
+            <select id="citaBarbero" required>
+              <option value="">Seleccionar barbero...</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Fecha y Hora *</label>
+            <input type="datetime-local" id="citaFechaHora" required>
+          </div>
+          <div class="info-box" id="citaInfo">
+            <p>💰 Precio: <strong>$0.00</strong></p>
+            <p>⏱️ Duración: <strong>0 min</strong></p>
+          </div>
+          <div class="modal-buttons">
+            <button type="button" class="btn-secondary" id="cancelarCita">Cancelar</button>
+            <button type="submit" class="btn-primary">Agendar Cita</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL FINALIZAR CITA -->
+  <div id="modalFinalizar" class="modal hidden">
+    <div class="modal-content modal-medium">
+      <div class="modal-header">
+        <h2>✅ Finalizar Servicio</h2>
+        <button class="modal-close">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div id="finalizarInfo"></div>
+        <form id="formFinalizar">
+          <div class="form-group">
+            <label>Extras adicionales</label>
+            <div class="checkbox-group">
+              <label><input type="checkbox" class="extra" data-precio="5"> Diseño/Figura (+$5)</label>
+              <label><input type="checkbox" class="extra" data-precio="3"> Toalla caliente (+$3)</label>
+              <label><input type="checkbox" class="extra" data-precio="8"> Mascarilla capilar (+$8)</label>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Productos adicionales</label>
+            <div id="productosExtras"></div>
+          </div>
+          <div class="form-group">
+            <label>Método de Pago *</label>
+            <select id="pagoMetodo" required>
+              <option value="efectivo">💵 Efectivo</option>
+              <option value="tarjeta">💳 Tarjeta</option>
+              <option value="transferencia">📲 Transferencia</option>
+            </select>
+          </div>
+          <div class="total-box">
+            <h3>Total a pagar: <span id="totalFinalizar">$0.00</span></h3>
+          </div>
+          <div class="modal-buttons">
+            <button type="button" class="btn-secondary" id="cancelarFinalizar">Cancelar</button>
+            <button type="submit" class="btn-success">💵 Cobrar y Finalizar</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL PRODUCTO -->
+  <div id="modalProducto" class="modal hidden">
+    <div class="modal-content modal-medium">
+      <div class="modal-header">
+        <h2>📦 Agregar Producto</h2>
+        <button class="modal-close">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form id="formProducto">
+          <div class="form-group">
+            <label>Nombre del Producto *</label>
+            <input type="text" id="productoNombre" required placeholder="Ej: Cera Fijación Fuerte">
+          </div>
+          <div class="form-group">
+            <label>Stock Inicial *</label>
+            <input type="number" id="productoStock" required min="0" value="0">
+          </div>
+          <div class="form-group">
+            <label>Precio de Costo *</label>
+            <input type="number" id="productoCosto" required min="0" step="0.01" placeholder="0.00">
+          </div>
+          <div class="form-group">
+            <label>Precio de Venta *</label>
+            <input type="number" id="productoVenta" required min="0" step="0.01" placeholder="0.00">
+          </div>
+          <div class="info-box" id="productoMargen">
+            Margen de ganancia: $0.00
+          </div>
+          <div class="modal-buttons">
+            <button type="button" class="btn-secondary" id="cancelarProducto">Cancelar</button>
+            <button type="submit" class="btn-primary">Guardar Producto</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL VENTA DIRECTA -->
+  <div id="modalVentaDirecta" class="modal hidden">
+    <div class="modal-content modal-small">
+      <div class="modal-header">
+        <h2>💰 Venta Rápida</h2>
+        <button class="modal-close">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label>Producto</label>
+          <select id="ventaProducto" required>
+            <option value="">Seleccionar producto...</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Cantidad</label>
+          <input type="number" id="ventaCantidad" min="1" value="1">
+        </div>
+        <div class="info-box" id="ventaInfo">
+          Stock disponible: --
+        </div>
+        <div class="modal-buttons">
+          <button type="button" class="btn-secondary" id="cancelarVenta">Cancelar</button>
+          <button type="button" class="btn-success" id="confirmarVenta">💵 Cobrar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL CONFIGURACIÓN -->
+  <div id="modalConfig" class="modal hidden">
+    <div class="modal-content modal-medium">
+      <div class="modal-header">
+        <h2>⚙️ Configuración</h2>
+        <button class="modal-close config-close">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="config-section">
+          <h3>📤 Respaldo de datos</h3>
+          <p>Guarda una copia de seguridad de toda tu información</p>
+          <button id="btnExportar" class="btn-primary btn-block">📥 Exportar a JSON</button>
+        </div>
+
+        <div class="config-section">
+          <h3>📥 Restaurar datos</h3>
+          <p>Restaura una copia de seguridad previa</p>
+          <input type="file" id="fileImportar" accept=".json" style="display: none;">
+          <button id="btnImportar" class="btn-secondary btn-block">📤 Importar desde JSON</button>
+          <div class="warning-msg hidden" id="importWarning">
+            ⚠️ Atención: Esto reemplazará TODOS los datos actuales
+          </div>
+        </div>
+
+        <div class="config-section">
+          <h3>🎯 Datos de demostración</h3>
+          <p>Carga información de ejemplo para probar la aplicación</p>
+          <button id="btnCargarDemo" class="btn-warning btn-block">📋 Cargar demo</button>
+        </div>
+
+        <div class="config-section">
+          <h3>📊 Estadísticas</h3>
+          <div id="dbSize" class="stats-info">Calculando...</div>
+        </div>
+
+        <div class="config-section">
+          <h3>🗑️ Limpiar datos</h3>
+          <p>Elimina todos los datos y reinicia la aplicación</p>
+          <button id="btnLimpiarTodo" class="btn-danger btn-block">⚠️ Limpiar todo</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOAST NOTIFICACIONES -->
+  <div id="toast" class="toast hidden"></div>
+
+  <script src="app.js"></script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('sw.js').catch(err => {
+        console.log('Service Worker error:', err);
+      });
+    }
+  </script>
+</body>
+</html>
