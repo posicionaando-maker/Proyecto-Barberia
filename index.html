@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="es">
+<header>
+  <h1>✂️ BarberControl</h1>
+  <div class="header-right">
+    <span id="offlineStatus" class="offline-status">🟢 Online</span>
+    <button id="btnConfig" class="icon-btn">⚙️</button>
+  </div>
+</header>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>BarberControl PWA</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="stylesheet" href="style.css">
+  <meta name="theme-color" content="#1e1e2f">
+</head>
+<body>
+  <div class="app-container">
+    <header>
+      <h1>✂️ BarberControl</h1>
+      <div class="offline-status" id="offlineStatus">🟢 Online</div>
+    </header>
+
+    <nav class="tabs">
+      <button class="tab-btn active" data-tab="clientes">👥 Clientes</button>
+      <button class="tab-btn" data-tab="agenda">📅 Agenda</button>
+      <button class="tab-btn" data-tab="inventario">📦 Inventario</button>
+      <button class="tab-btn" data-tab="reportes">📊 Reportes</button>
+    </nav>
+
+    <!-- Panel Clientes -->
+    <div id="clientes" class="tab-content active">
+      <button class="btn-primary" id="btnNuevoCliente">+ Nuevo Cliente</button>
+      <input type="text" id="searchCliente" placeholder="Buscar por nombre o teléfono" class="search-input">
+      <div id="listaClientes" class="card-list"></div>
+    </div>
+
+    <!-- Panel Agenda -->
+    <div id="agenda" class="tab-content">
+      <button class="btn-primary" id="btnNuevaCita">+ Nueva Cita</button>
+      <div id="listaCitas" class="card-list"></div>
+    </div>
+
+    <!-- Panel Inventario -->
+    <div id="inventario" class="tab-content">
+      <button class="btn-primary" id="btnNuevoProducto">+ Nuevo Producto</button>
+      <button class="btn-secondary" id="btnVentaDirecta">💰 Venta Rápida</button>
+      <div id="listaProductos" class="card-list"></div>
+    </div>
+
+    <!-- Panel Reportes -->
+    <div id="reportes" class="tab-content">
+      <div class="report-filters">
+        <input type="date" id="fechaReporte">
+        <button id="btnVerResumen">Ver Resumen</button>
+      </div>
+      <div id="resumenDia"></div>
+      <h3>🏆 Ranking Servicios</h3>
+      <div id="rankingServicios"></div>
+    </div>
+  </div>
+
+  <!-- Modales (simplificados) -->
+  <div id="modal" class="modal hidden">
+    <div class="modal-content">
+      <span class="close">&times;</span>
+      <div id="modal-body"></div>
+    </div>
+  </div>
+  <!-- Modal de Configuración -->
+<div id="modalConfig" class="modal hidden">
+  <div class="modal-content">
+    <span class="close-config">&times;</span>
+    <h2>⚙️ Configuración de Datos</h2>
+    
+    <div class="config-section">
+      <h3>📤 Exportar datos</h3>
+      <p>Guarda una copia de seguridad de todos los datos (clientes, citas, productos, ventas)</p>
+      <button id="btnExportar" class="btn-primary">📥 Exportar a JSON</button>
+    </div>
+
+    <div class="config-section">
+      <h3>📥 Importar datos</h3>
+      <p>Restaura una copia de seguridad previa (sobrescribe los datos actuales)</p>
+      <input type="file" id="fileImportar" accept=".json" style="display: none;">
+      <button id="btnImportar" class="btn-secondary">📤 Importar desde JSON</button>
+      <div id="importWarning" class="warning-msg hidden">⚠️ Atención: Esto reemplazará TODOS los datos actuales</div>
+    </div>
+
+    <div class="config-section">
+      <h3>🗑️ Datos de demostración</h3>
+      <p>Carga datos de ejemplo para probar la aplicación</p>
+      <button id="btnCargarDemo" class="btn-warning">📋 Cargar datos demo</button>
+    </div>
+
+    <div class="config-section">
+      <h3>📊 Tamaño de la base de datos</h3>
+      <p id="dbSize">Calculando...</p>
+    </div>
+  </div>
+</div>
+
+  <script src="app.js"></script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js');
+    }
+  </script>
+</body>
+</html>
